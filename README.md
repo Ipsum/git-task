@@ -68,9 +68,9 @@ task_list_name=$(git_task_filter $branch_name $absolute_path_to_git_repo)
 In `~/.bashrc`:
 ```
 function git_task_filter() {
-branch_name=$1
-dir_path=$2
-grep -Po "\/\K[A-Z]*-[0-9]*" <<< "$branch_name" || echo ""
+        branch_name=$1
+        dir_path=$2
+        grep -Po "\/\K[A-Z]*-[0-9]*" <<< "$branch_name" || echo ""
 }
 export -f git_task_filter
 ```
