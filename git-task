@@ -66,11 +66,7 @@ echo "Usage:"
 echo "  $0 add \"some task I should do\""
 echo "  $0 list"
 echo "  $0 rm <index of entry to delete from list>"
-echo "  $0 undo"
 }
-
-cmd=$1
-shift
 
 function _git_task_find_filename() {
 file_name=
@@ -100,6 +96,15 @@ if [[ ! -d "$GIT_TASK_DIR" ]]; then
 fi
 
 _git_task_find_filename
+
+if [ "$#" -eq 0 ]; then
+        _git_task_print_help
+        exit 1
+fi
+
+cmd=$1
+shift
+
 
 case $cmd in
 add)
