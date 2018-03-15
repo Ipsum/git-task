@@ -1,5 +1,5 @@
 #!/bin/bash
-set -Eeu
+set -Ee
 trap traceback ERR
 
 function traceback() {
