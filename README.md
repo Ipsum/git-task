@@ -65,7 +65,7 @@ task_list_name=$(git_task_filter $branch_name $absolute_path_to_git_repo)
 
 ## Examples
 ### Extracting a Jira Ticket
-In .bashrc:
+In `~/.bashrc`:
 ```
 function git_task_filter() {
 branch_name=$1
