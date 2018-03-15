@@ -1,89 +1,87 @@
 #!/bin/bash
 set -Eeu
-
 trap traceback ERR
+
 function traceback() {
-rc="$?"
-_traceback 1
-echo "$0 failed with code \"$rc\""
+        local rc="$?"
+        _traceback 1
+        echo "$0 failed with code \"$rc\""
 }
 function _traceback() {
-local -i start=$(( ${1:-0} + 1 ))
-local -i end=${#BASH_SOURCE[@]}
-local -i i=0
-local -i j=0
-
-echo "Traceback:" 1>&2
-for ((i=start; i < end; i++)); do
-        j=$(( i - 1 ))
-        local function="${FUNCNAME[$i]}"
-        local file="${BASH_SOURCE[$i]}"
-        local line="${BASH_LINENO[$j]}"
-        echo "     ${function}() in ${file}:${line}" 1>&2
-done
+        local -i start=$(( ${1:-0} + 1 ))
+        local -i end=${#BASH_SOURCE[@]}
+        local -i i=0
+        local -i j=0
+        echo "Traceback:" 1>&2
+        for ((i=start; i < end; i++)); do
+                j=$(( i - 1 ))
+                local function="${FUNCNAME[$i]}"
+                local file="${BASH_SOURCE[$i]}"
+                local line="${BASH_LINENO[$j]}"
+                echo "     ${function}() in ${file}:${line}" 1>&2
+        done
 }
 function _git_task_add_note() {
-local file=$1
-shift
-if [[ -z "$@" ]]; then
-        echo "No task string!"
-        exit 1
-fi
-echo "$@" >> $GIT_TASK_DIR/$file
+        local file=$1
+        shift
+        if [[ -z "$@" ]]; then
+                echo "No task string!"
+                exit 1
+        fi
+        echo "$@" >> $GIT_TASK_DIR/$file
 }
 function _git_task_delete_note() {
-local file=$1
-local task_index=$2
-if [[ ! -s $GIT_TASK_DIR/$file ]]; then
-        echo "No tasks to delete"
-        exit 0
-fi
-if [[ -z "$task_index" ]]; then
-        echo "No task index to delete!"
-        exit 1
-fi
-sed -i.bak -e "${task_index}d" $GIT_TASK_DIR/$file
-# If we deleted the last line, delete the file
-if [[ ! -s $GIT_TASK_DIR/$file ]]; then
-        rm $GIT_TASK_DIR/$file
-fi
+        local file=$1
+        local task_index=$2
+        if [[ ! -s $GIT_TASK_DIR/$file ]]; then
+                echo "No tasks to delete"
+                exit 0
+        fi
+        if [[ -z "$task_index" ]]; then
+                echo "No task index to delete!"
+                exit 1
+        fi
+        sed -i.bak -e "${task_index}d" $GIT_TASK_DIR/$file
+        # If we deleted the last line, delete the file
+        if [[ ! -s $GIT_TASK_DIR/$file ]]; then
+                rm $GIT_TASK_DIR/$file
+        fi
 }
 function _git_task_list_notes() {
-local file=$1
-if [[ -f  $GIT_TASK_DIR/$file ]]; then
-        if [[ -s $GIT_TASK_DIR/$file ]]; then
-                echo "* $file *"
-                cat -n $GIT_TASK_DIR/$file
+        local file=$1
+        if [[ -f  $GIT_TASK_DIR/$file ]]; then
+                if [[ -s $GIT_TASK_DIR/$file ]]; then
+                        echo "* $file *"
+                        cat -n $GIT_TASK_DIR/$file
+                else
+                        echo "No tasks yet"
+                fi
         else
                 echo "No tasks yet"
         fi
-else
-        echo "No tasks yet"
-fi
 }
 function _git_task_print_help() {
-echo "Usage:"
-echo "  $0 add \"some task I should do\""
-echo "  $0 list"
-echo "  $0 rm <index of entry to delete from list>"
+        echo "Usage:"
+        echo "  $0 add \"some task I should do\""
+        echo "  $0 list"
+        echo "  $0 rm <index of entry to delete from list>"
 }
-
 function _git_task_find_filename() {
-file_name=
-git_branch=$(git rev-parse --abbrev-ref HEAD)
-git_dir_abspath=$(git rev-parse --show-toplevel)
+        local file_name=
+        local git_branch=$(git rev-parse --abbrev-ref HEAD)
+        local git_dir_abspath=$(git rev-parse --show-toplevel)
 
-# Call a user defined function to get the name for the file
-if [ -n "$(type -t git_task_filter)" ] && [ "$(type -t git_task_filter)" = function ]; then
-        file_name=$(git_task_filter "$git_branch" "$git_dir_abspath")
-fi
-# We didn't get a filename from the user so make up one
-if [ -z "$file_name" ]; then
-        dirfolder=$(basename $git_dir_abspath)
-        file_name=$dirfolder+$git_branch
-fi
-# Remove slashes from the filename
-safe_file_name=$(echo $file_name | sed "s+/+-+g")
+        # Call a user defined function to get the name for the file
+        if [ -n "$(type -t git_task_filter)" ] && [ "$(type -t git_task_filter)" = function ]; then
+                file_name=$(git_task_filter "$git_branch" "$git_dir_abspath")
+        fi
+        # We didn't get a filename from the user so make up one
+        if [ -z "$file_name" ]; then
+                dirfolder=$(basename $git_dir_abspath)
+                file_name=$dirfolder+$git_branch
+        fi
+        # Remove slashes from the filename
+        safe_file_name=$(echo $file_name | sed "s+/+-+g")
 }
 
 if [[ -z "$GIT_TASK_DIR" ]]; then
@@ -104,7 +102,6 @@ fi
 
 cmd=$1
 shift
-
 
 case $cmd in
 add)
