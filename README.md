@@ -33,6 +33,10 @@ No tasks yet
 ```
 
 # Setup
+* Add git-task to your `$PATH`
+```
+ln -s /SOME/PATH/TO/git-task /usr/local/bin
+```
 * Setup GIT_TASK_DIR with the local path to save your tasks to in your `~/.bashrc`.
 ```
 export GIT_TASK_DIR=~/git-task-files
@@ -40,11 +44,6 @@ export GIT_TASK_DIR=~/git-task-files
 * Create the GIT_TASK_DIR.
 ```
 mkdir $GIT_TASK_DIR
-```
-* Add the following to your `~/.gitconfig`:
-```
-[alias]
-        task = !bash -c \"/YOUR/PATH/TO/git-task $@\"
 ```
 * Optionally export the callback `git_task_filter` function. This will allow you to configure how the task lists are named.
 
