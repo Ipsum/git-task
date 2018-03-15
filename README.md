@@ -36,6 +36,11 @@ No tasks yet
 ```
 export GIT_TASK_DIR=~/git-task-files
 ```
+* Add the following to your `~/.gitconfig`:
+```
+[alias]
+        task = !bash -c \"git-task $@\"
+```
 * Optionally export the callback `git_task_filter` function. This will allow you to configure how the task files are named.
 
 # git_task_filter
