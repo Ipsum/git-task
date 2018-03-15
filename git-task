@@ -72,9 +72,23 @@ echo "  $0 undo"
 cmd=$1
 shift
 
+function _git_task_find_filename() {
+file_name=
 git_branch=$(git rev-parse --abbrev-ref HEAD)
-git_branch_safe_name=$(echo $git_branch | sed "s+/+-+g")
-file_name=$(echo $git_branch | grep -Po "\/\K[A-Z]*-[0-9]*" || echo $git_branch_safe_name)
+git_dir_abspath=$(git rev-parse --show-toplevel)
+
+# Call a user defined function to get the name for the file
+if [ -n "$(type -t git_task_filter)" ] && [ "$(type -t git_task_filter)" = function ]; then
+        file_name=$(git_task_filter "$git_branch" "$git_dir_abspath")
+fi
+# We didn't get a filename from the user so make up one
+if [ -z "$file_name" ]; then
+        dirfolder=$(basename $git_dir_abspath)
+        file_name=$dirfolder+$git_branch
+fi
+# Remove slashes from the filename
+safe_file_name=$(echo $file_name | sed "s+/+-+g")
+}
 
 if [[ -z "$GIT_TASK_DIR" ]]; then
         echo "\$GIT_TASK_DIR is not set, unsure where to save tasks"
@@ -85,21 +99,23 @@ if [[ ! -d "$GIT_TASK_DIR" ]]; then
         exit 1
 fi
 
+_git_task_find_filename
+
 case $cmd in
 add)
-        _git_task_add_note $file_name "$@"
+        _git_task_add_note $safe_file_name "$@"
         ;;
 remove)
-        _git_task_delete_note $file_name $*
+        _git_task_delete_note $safe_file_name $*
         ;;
 delete)
-        _git_task_delete_note $file_name $*
+        _git_task_delete_note $safe_file_name $*
         ;;
 rm)
-        _git_task_delete_note $file_name $*
+        _git_task_delete_note $safe_file_name $*
         ;;
 list)
-        _git_task_list_notes $file_name
+        _git_task_list_notes $safe_file_name
         ;;
 help)
         _git_task_print_help
