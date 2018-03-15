@@ -4,16 +4,19 @@ set -e
 function _git_task_add_note() {
 local file=$1
 shift
-local task=$@
-if [[ -z "$task" ]]; then
+if [[ -z "$@" ]]; then
         echo "No task string!"
         exit 1
 fi
-echo "$task" >> $GIT_TASK_DIR/$file
+echo "$@" >> $GIT_TASK_DIR/$file
 }
 function _git_task_delete_note() {
 local file=$1
 local task_index=$2
+if [[ ! -s $GIT_TASK_DIR/$file ]]; then
+        echo "No tasks to delete"
+        exit 0
+fi
 if [[ -z "$task_index" ]]; then
         echo "No task index to delete!"
         exit 1
@@ -47,15 +50,10 @@ echo "  $0 undo"
 
 cmd=$1
 shift
-task_args=$@
 
 git_branch=$(git rev-parse --abbrev-ref HEAD)
-jira_ticket=$(echo $git_branch | grep -Po "\/\K[A-Z]*-[0-9]*")
-
-if [[ -z "${jira_ticket// }" ]]; then
-        echo "No ticket number found, aborting"
-        exit 1
-fi
+git_branch_safe_name=$(echo $git_branch | sed "s+/+-+g")
+file_name=$(echo $git_branch | grep -Po "\/\K[A-Z]*-[0-9]*" || echo $git_branch_safe_name)
 
 if [[ -z "$GIT_TASK_DIR" ]]; then
         echo "\$GIT_TASK_DIR is not set, unsure where to save tasks"
@@ -68,19 +66,19 @@ fi
 
 case $cmd in
 add)
-        _git_task_add_note $jira_ticket $task_args
+        _git_task_add_note $file_name "$@"
         ;;
 remove)
-        _git_task_delete_note $jira_ticket $task_args
+        _git_task_delete_note $file_name $*
         ;;
 delete)
-        _git_task_delete_note $jira_ticket $task_args
+        _git_task_delete_note $file_name $*
         ;;
 rm)
-        _git_task_delete_note $jira_ticket $task_args
+        _git_task_delete_note $file_name $*
         ;;
 list)
-        _git_task_list_notes $jira_ticket
+        _git_task_list_notes $file_name
         ;;
 help)
         _git_task_print_help
