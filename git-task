@@ -1,6 +1,27 @@
 #!/bin/bash
-set -e
+set -Eeu
 
+trap traceback ERR
+function traceback() {
+rc="$?"
+_traceback 1
+echo "$0 failed with code \"$rc\""
+}
+function _traceback() {
+local -i start=$(( ${1:-0} + 1 ))
+local -i end=${#BASH_SOURCE[@]}
+local -i i=0
+local -i j=0
+
+echo "Traceback:" 1>&2
+for ((i=start; i < end; i++)); do
+        j=$(( i - 1 ))
+        local function="${FUNCNAME[$i]}"
+        local file="${BASH_SOURCE[$i]}"
+        local line="${BASH_LINENO[$j]}"
+        echo "     ${function}() in ${file}:${line}" 1>&2
+done
+}
 function _git_task_add_note() {
 local file=$1
 shift
